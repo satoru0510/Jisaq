@@ -1,4 +1,4 @@
-module CuJisaq
+module JisaqCUDAExt
 
 using Jisaq, CUDA
 
