@@ -124,7 +124,7 @@ function Jisaq.apply_diagonal1q!(cusv::Statevector{<:CuArray}, loc::Int, d1,d2)
         lm1 = loc - 1
         idx1 = bit_insert(idx, 1 << lm1 )
         idx2 = idx1 ⊻ 1 << lm1 + 1
-        a[idx1] *= d1
+        a[idx1+1] *= d1
         a[idx2] *= d2
         return
     end
