@@ -133,6 +133,11 @@ function expect(mps::OpenMPS, obs::Pair{Int, TensorMap{T, ComplexSpace, 1, 1, Ve
     inner_prod(mps, cp)
 end
 
+"""
+    expect(mps::OpenMPS, obs::AbstractChannel)
+
+compute expectation value
+"""
 function expect(mps::OpenMPS, obs::AbstractChannel)
     cp = apply(mps, obs)
     inner_prod(mps, cp)
