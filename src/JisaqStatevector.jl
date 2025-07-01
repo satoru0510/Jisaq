@@ -184,8 +184,8 @@ function apply!(sv::Statevector, x::Ry)
     apply!(sv, U2(x.loc, m))
 end
 
-function apply_diagonal1q!(sv::Statevector, a,b)
-        nq,loc,vec = sv.nq, x.loc, sv.vec
+function apply_diagonal1q!(sv::Statevector, loc::Int, a,b)
+        nq,vec = sv.nq, sv.vec
         @inbounds for i in 1 : 2^loc : 2^nq
             for j in i:i+2^(loc-1)-1
                 vec[j] *= b
@@ -199,7 +199,7 @@ end
 
 function apply!(sv::Statevector, x::Rz)
     a,b = cis(x.theta/ 2), cis(-x.theta/ 2)
-    apply_diagonal1q!(sv, a,b)
+    apply_diagonal1q!(sv, x.loc, a,b)
 end
 
 function apply!(sv::Statevector, x::Xs)
