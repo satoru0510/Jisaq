@@ -137,4 +137,11 @@ function Jisaq.apply_diagonal1q!(cusv::Statevector{<:CuArray}, loc::Int, d1,d2)
     cusv
 end
 
+#TODO
+#cu
+#CX
+#I+A
+#Rzz
+#TimeEvolution
+
 end

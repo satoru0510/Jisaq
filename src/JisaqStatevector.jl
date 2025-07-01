@@ -375,3 +375,7 @@ run circuit simulation
 """
 Base.run(init::Statevector, cir::Circuit, sim::StatevectorSimulator) = run!(copy(init), cir, sim)
 Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator())
+
+#TODO
+#apply!(sv::Statevector, Scale)
+#apply!(sv::Statevector, Add)
