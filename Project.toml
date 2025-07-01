@@ -16,3 +16,13 @@ CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
 
 [extensions]
 CuJisaq = "CUDA"
+
+[compat]
+BenchmarkTools = "1"
+KrylovKit = "0.9"
+LinearAlgebra = "1"
+Random = "1"
+SparseArrays = "1"
+TensorKit = "0.14"
+CUDA = "5"
+julia = "1"
