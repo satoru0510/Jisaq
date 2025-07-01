@@ -5,8 +5,7 @@ using CUDA
 
 CUDA.allowscalar(false)
 
-export cu_statevec
-function cu_statevec(T, nq::Int)
+function Jisaq.cu_statevec(T, nq::Int)
     ret = CUDA.zeros(T, 2^nq)
     function k(a)
         a[1] = 1
@@ -16,7 +15,7 @@ function cu_statevec(T, nq::Int)
     Statevector(ret)
 end
 
-function cu_statevec(nq::Int)
+function Jisaq.cu_statevec(nq::Int)
     cu_statevec(ComplexF64, nq)
 end
 

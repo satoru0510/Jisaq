@@ -40,7 +40,7 @@ export cu_statevec
 """
     cu_statevec([ty::Type{T}=ComplexF64], nq::Int)
 
-CUDA version of `sttaevec`
+CUDA version of `statevec`
 """
 function cu_statevec end
 
