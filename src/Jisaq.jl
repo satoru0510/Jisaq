@@ -37,12 +37,6 @@ function (cir::AbstractChannel)(st::AbstractState)
 end
 
 export cu_statevec
-"""
-    cu_statevec([ty::Type{T}=ComplexF64], nq::Int)
-
-CUDA version of `statevec`
-"""
-function cu_statevec end
 
 include("JisaqCircuit.jl")
 include("JisaqOperator.jl")
