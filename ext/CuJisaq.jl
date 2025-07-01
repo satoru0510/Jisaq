@@ -4,11 +4,6 @@ using Jisaq, CUDA
 
 CUDA.allowscalar(false)
 
-"""
-    cu_statevec([ty::Type{T}=ComplexF64], nq::Int)
-
-CUDA version of `statevec`
-"""
 function Jisaq.cu_statevec(T, nq::Int)
     ret = CUDA.zeros(T, 2^nq)
     function k(a)
