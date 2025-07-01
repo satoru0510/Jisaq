@@ -113,7 +113,28 @@ function Jisaq.apply!(cusv::Statevector{<:CuArray}, u::U2)
     else
         @cuda blocks=length(arr)÷(2048) threads=1024 k(arr, loc, u1,u2,u3,u4)
     end
-    arr
+    cusv
+end
+
+function Jisaq.apply_diagonal1q!(cusv::Statevector{<:CuArray}, loc::Int, d1,d2)
+    function k(a, loc, d1, d2)
+        i = threadIdx().x - 1
+        j = blockIdx().x - 1
+        idx = 1024j + i
+        lm1 = loc - 1
+        idx1 = bit_insert(idx, 1 << lm1 )
+        idx2 = idx1 ⊻ 1 << lm1 + 1
+        a[idx1] *= d1
+        a[idx2] *= d2
+        return
+    end
+    arr = cusv.vec
+    if length(arr) ≤ 1024
+        @cuda blocks=1 threads=length(arr)÷2 k(arr, loc, d1, d2)
+    else
+        @cuda blocks=length(arr)÷(2048) threads=1024 k(arr, loc, d1, d2)
+    end
+    cusv
 end
 
 end
