@@ -5,6 +5,7 @@ using CUDA
 
 CUDA.allowscalar(false)
 
+export cu_statevec
 function cu_statevec(T, nq::Int)
     ret = CUDA.zeros(T, 2^nq)
     function k(a)
