@@ -135,6 +135,27 @@ function apply!(sv::AbstractStatevector, x::Z)
     return sv
 end
 
+function apply!(sv::AbstractStatevector, x::P0)
+    nq,loc,vec = sv.nq, x.loc, sv.vec
+    for i in 1 : 2^loc : 2^nq
+        for j in i+2^(loc-1):i+2^loc-1
+            @inbounds vec[j] = 0
+        end
+    end
+    return sv
+end
+
+function apply!(sv::AbstractStatevector, x::P1)
+    nq,loc,vec = sv.nq, x.loc, sv.vec
+    _2_pow_locm1 = 2^(loc - 1)
+    for i in 1 : 2^loc : 2^nq
+        for j in i : i+_2_pow_locm1-1
+            @inbounds vec[j] = 0
+        end
+    end
+    return sv
+end
+
 function apply!(sv::AbstractStatevector, x::U2)
     nq,loc,vec = sv.nq, x.loc, sv.vec
     a,c,b,d = x.mat
@@ -267,8 +288,28 @@ function apply!(sv::AbstractStatevector, x::RyyRxx)
     apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
 end
 
+function apply!(sv::AbstractStatevector, x::RxxRyy)
+    xx,yy = x.theta1/2, x.theta2/2
+    sx,sy,cx,cy = sin(xx), sin(yy), cos(xx), cos(yy)
+    d1 = sx * sy + cy * cx
+    d2 = -sx * sy + cy * cx
+    b = im * (-sx * cy + sy * cx)
+    c = im * (-sx * cy - sy * cx)
+    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+end
+
 function apply!(sv::AbstractStatevector, x::RzzRyy)
     zz,yy = x.theta1/2, x.theta2/2
+    sy,sz,cy,cz = sin(yy), sin(zz), cos(yy), cos(zz)
+    d1 = cz * cy - im * sz * cy
+    d2 = cy * cz + im * sz * cy
+    b = sy * sz + im * cz * sy
+    c = sy * sz - im * sy * cz
+    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+end
+
+function apply!(sv::AbstractStatevector, x::RyyRzz)
+    yy,zz = x.theta1/2, x.theta2/2
     sy,sz,cy,cz = sin(yy), sin(zz), cos(yy), cos(zz)
     d1 = cz * cy - im * sz * cy
     d2 = cy * cz + im * sz * cy
@@ -399,5 +440,7 @@ Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator(
 #TODO
 #apply!(sv::Statevector, Scale)
 #apply!(sv::Statevector, Add)
+#P0, P1
+#RxxRzz
 #inner_prod
 #fidelity

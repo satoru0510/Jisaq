@@ -236,6 +236,7 @@ CUDA.cu(sv::Statevector) = Statevector(CuArray(sv.vec) )
 Jisaq.cpu(cusv::Statevector{<:CuArray}) = Statevector(Array(cusv.vec) )
 
 #TODO
+#P0, P1
 #TimeEvolution
 
 end

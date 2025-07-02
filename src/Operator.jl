@@ -131,7 +131,7 @@ for g in [:Rxx, :Ryy, :Rzz]
 end
 
 # two-qubit composit rotation gate
-for g in [:RyyRxx, :RzzRyy]
+for g in [:RyyRxx, :RzzRyy, :RxxRzz, :RxxRyy, :RyyRzz, :RzzRxx]
     name = string(g)
     @eval export $g
     @eval begin

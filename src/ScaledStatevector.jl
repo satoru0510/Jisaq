@@ -66,15 +66,15 @@ Return statevector of `sv`.
 Base.vec(sv::ScaledStatevector) = sv.vec * sv.scalar
 
 """
-    copy(sv::Statevector)
+    copy(sv::ScaledStatevector)
 
-Make a copy of a Statevector `sv`. It is equivalent to `Statevector(copy(sv.vec))`.
+Make a copy of a ScaledStatevector `sv`.
 """
 Base.copy(sv::ScaledStatevector) = ScaledStatevector(copy(sv.vec), sv.scalar)
 
 #TODO
-function apply!(sv::ScaledStatevector, x::Rz)
-end
+#Statevector <-> ScaledStatevector
+#apply_diagonal1q!
 
 function apply!(sv::ScaledStatevector, x::Rzz)
 end
