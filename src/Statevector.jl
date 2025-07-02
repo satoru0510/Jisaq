@@ -1,4 +1,4 @@
-export Statevector, StatevectorSimulator
+export AbstractStatevector, Statevector, StatevectorSimulator
 export statevec, rand_statevec, expect, nqubits
 
 using LinearAlgebra, Random
@@ -69,7 +69,7 @@ Base.vec(sv::Statevector) = sv.vec
 
 Returns number of qubits of `sv`.
 """
-nqubits(sv::Statevector) = sv.nq
+nqubits(sv::AbstractStatevector) = sv.nq
 
 """
     copy(sv::Statevector)
@@ -97,9 +97,9 @@ end
     v
 end
 
-apply!(sv::Statevector, ::Id) = sv
+apply!(sv::AbstractStatevector, ::Id) = sv
 
-function apply!(sv::Statevector, x::X)
+function apply!(sv::AbstractStatevector, x::X)
     nq,loc,vec = sv.nq, x.loc, sv.vec
     _2_pow_locm1 = 2^(loc - 1)
     _2_pow_loc_m1 = 2^loc-1
@@ -109,7 +109,7 @@ function apply!(sv::Statevector, x::X)
     return sv
 end
 
-function apply!(sv::Statevector, x::Y)
+function apply!(sv::AbstractStatevector, x::Y)
     nq,loc,vec = sv.nq, x.loc, sv.vec
     _2_pow_locm1 = 2^(loc - 1)
     _2_pow_loc_m1 = 2^loc-1
@@ -125,7 +125,7 @@ function apply!(sv::Statevector, x::Y)
     return sv
 end
 
-function apply!(sv::Statevector, x::Z)
+function apply!(sv::AbstractStatevector, x::Z)
     nq,loc,vec = sv.nq, x.loc, sv.vec
     for i in 1 : 2^loc : 2^nq
         for j in i+2^(loc-1):i+2^loc-1
@@ -135,7 +135,7 @@ function apply!(sv::Statevector, x::Z)
     return sv
 end
 
-function apply!(sv::Statevector, x::U2)
+function apply!(sv::AbstractStatevector, x::U2)
     nq,loc,vec = sv.nq, x.loc, sv.vec
     a,c,b,d = x.mat
     step1 = 1 << (loc - 1)
@@ -152,11 +152,11 @@ function apply!(sv::Statevector, x::U2)
 end
 
 const _hadamard_mat = [1 1; 1 -1] / sqrt(2)
-function apply!(sv::Statevector, x::H)
+function apply!(sv::AbstractStatevector, x::H)
     apply!(sv, U2(x.loc, _hadamard_mat))
 end
 
-function apply!(sv::Statevector, x::CX)
+function apply!(sv::AbstractStatevector, x::CX)
     nq,v = sv.nq, sv.vec
     i,j = x.ctrl_loc, x.targ_loc
     offset = 1 + 2^(i-1)
@@ -171,7 +171,7 @@ function apply!(sv::Statevector, x::CX)
     sv
 end
 
-function apply!(sv::Statevector, x::Rx)
+function apply!(sv::AbstractStatevector, x::Rx)
     theta = x.theta/2
     m = [
         cos(theta) -im*sin(theta)
@@ -180,7 +180,7 @@ function apply!(sv::Statevector, x::Rx)
     apply!(sv, U2(x.loc, m))
 end
 
-function apply!(sv::Statevector, x::Ry)
+function apply!(sv::AbstractStatevector, x::Ry)
     theta = x.theta/2
     m = [
         cos(theta) -sin(theta)
@@ -202,12 +202,12 @@ function apply_diagonal1q!(sv::Statevector, loc::Int, a,b)
         return sv
 end
 
-function apply!(sv::Statevector, x::Rz)
+function apply!(sv::AbstractStatevector, x::Rz)
     a,b = cis(x.theta/ 2), cis(-x.theta/ 2)
     apply_diagonal1q!(sv, x.loc, a,b)
 end
 
-function apply!(sv::Statevector, x::Xs)
+function apply!(sv::AbstractStatevector, x::Xs)
     nq = sv.nq
     idxs = x.locs
     v = sv.vec
@@ -221,7 +221,7 @@ function apply!(sv::Statevector, x::Xs)
     sv
 end
 
-function apply!(sv::Statevector, x::I_plus_A)
+function apply!(sv::AbstractStatevector, x::I_plus_A)
     a1,a2,b,c = x.d1, x.d2, x.b, x.c
     i,j,nq,v = x.loc1, x.loc2, sv.nq, sv.vec
     mask = 2^(i-1) + 2^(j-1)
@@ -244,20 +244,20 @@ function apply!(sv::Statevector, x::I_plus_A)
     end
 end
 
-function apply!(sv::Statevector, x::Rxx)
+function apply!(sv::AbstractStatevector, x::Rxx)
     theta = x.theta/2
     d,bc = cos(theta), -im*sin(theta)
     apply!(sv, I_plus_A(x.loc1, x.loc2, d, d, bc, bc))
 end
 
-function apply!(sv::Statevector, x::Ryy)
+function apply!(sv::AbstractStatevector, x::Ryy)
     theta = x.theta/2
     s = sin(theta)
     d,b,c = cos(theta), im*s, -im*s
     apply!(sv, I_plus_A(x.loc1, x.loc2, d,d,b,c))
 end
 
-function apply!(sv::Statevector, x::RyyRxx)
+function apply!(sv::AbstractStatevector, x::RyyRxx)
     yy,xx = x.theta1/2, x.theta2/2
     sx,sy,cx,cy = sin(xx), sin(yy), cos(xx), cos(yy)
     d1 = sx * sy + cy * cx
@@ -267,7 +267,7 @@ function apply!(sv::Statevector, x::RyyRxx)
     apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
 end
 
-function apply!(sv::Statevector, x::RzzRyy)
+function apply!(sv::AbstractStatevector, x::RzzRyy)
     zz,yy = x.theta1/2, x.theta2/2
     sy,sz,cy,cz = sin(yy), sin(zz), cos(yy), cos(zz)
     d1 = cz * cy - im * sz * cy
@@ -291,7 +291,7 @@ function apply!(sv::Statevector, x::Rzz)
     end
 end
 
-function apply!(sv::Statevector, te::TimeEvolution)
+function apply!(sv::AbstractStatevector, te::TimeEvolution)
     h = te.hamilt
     nq = nqubits(sv)
     h_mat = mat(nq, h)
@@ -399,3 +399,5 @@ Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator(
 #TODO
 #apply!(sv::Statevector, Scale)
 #apply!(sv::Statevector, Add)
+#inner_prod
+#fidelity

@@ -23,6 +23,7 @@ function Base.show(io::IO, cir::Circuit)
 end
 
 function apply!(sv::AbstractState, cir::Circuit)
+    #TODO: boundscheck
     for g in cir.gates
         apply!(sv, g)
     end
