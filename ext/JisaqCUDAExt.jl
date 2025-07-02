@@ -129,8 +129,8 @@ function Jisaq.apply_diagonal1q!(cusv::Statevector{<:CuArray}, loc::Int, d1,d2)
         lm1 = loc - 1
         idx1 = bit_insert(idx, 1 << lm1 )
         idx2 = idx1 ⊻ 1 << lm1 + 1
-        a[idx1+1] *= d1
-        a[idx2] *= d2
+        a[idx1+1] *= d2
+        a[idx2] *= d1
         return
     end
     arr = cusv.vec
@@ -168,6 +168,40 @@ function Jisaq.apply!(sv::Statevector{<:CuArray}, x::CX)
     sv
 end
 
+function Jisaq.apply!(cusv::Statevector{<:CuArray}, ipa::I_plus_A)
+    function k(v, step1,_2_pow_maxim1,mask, a1,a2,b,c)
+        tidx = threadIdx().x - 1
+        bidx = blockIdx().x - 1
+        m = 1024*bidx + tidx
+        bl = m ÷ (step1 >> 1)
+        bm = m % (step1 >> 1)
+        l = step1 * bl
+        lpk = l + bm
+        selector = l & _2_pow_maxim1 == 0
+        bc = selector ? b : c
+        a12 = selector ? a1 : a2
+        idx1 = lpk + 1
+        idx2 = lpk ⊻ mask + 1
+        x = v[idx1]
+        y = v[idx2]
+        v[idx1] = x * a12 + y * bc
+        v[idx2] = x * bc + y * a12
+        return
+    end
+    a1,a2,b,c = ipa.d1, ipa.d2, ipa.b, ipa.c
+    i,j,nq,v = ipa.loc1, ipa.loc2, cusv.nq, cusv.vec
+    mask = 2^(i-1) + 2^(j-1)
+    mini,maxi = minmax(i,j)
+    _2_pow_maxim1 = 2^(maxi-1)
+    step1 = 2^mini
+    if length(v) ≤ 1024
+        @cuda blocks=1 threads=length(v)÷2 k(v, step1,_2_pow_maxim1,mask, a1,a2,b,c)
+    else
+        @cuda blocks=length(v)÷(2048) threads=1024 k(v, step1,_2_pow_maxim1,mask, a1,a2,b,c)
+    end
+    cusv
+end
+
 """
     CUDA.cu(sv::Statevector)
 
@@ -178,7 +212,6 @@ CUDA.cu(sv::Statevector) = Statevector(CuArray(sv.vec) )
 Jisaq.cpu(cusv::Statevector{<:CuArray}) = Statevector(Array(cusv.vec) )
 
 #TODO
-#I+A
 #Rzz
 #TimeEvolution
 
