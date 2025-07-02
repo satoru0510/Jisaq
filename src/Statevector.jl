@@ -4,9 +4,14 @@ export statevec, rand_statevec, expect, nqubits
 using LinearAlgebra, Random
 
 """
+    AbstractStatevector <: AbstractState
+"""
+abstract type AbstractStatevector <: AbstractState end
+
+"""
     mutable struct Statevector{T <: AbstractVector} <: AbstractState
 """
-mutable struct Statevector{T <: AbstractVector} <: AbstractState
+mutable struct Statevector{T <: AbstractVector} <: AbstractStatevector
     nq::Int
     vec::T
     function Statevector(vec::AbstractVector)

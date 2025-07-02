@@ -52,11 +52,12 @@ CUDA version of `rand_statevec`
 """
 function cu_rand_statevec end
 
-include("JisaqCircuit.jl")
-include("JisaqOperator.jl")
-include("JisaqCircuitDrawer.jl")
-include("JisaqStatevector.jl")
-include("JisaqOpenMPS.jl")
-include("JisaqBenchmark.jl")
+include("Circuit.jl")
+include("Operator.jl")
+include("CircuitDrawer.jl")
+include("Statevector.jl")
+include("ScaledStatevector.jl")
+include("OpenMPS.jl")
+include("Benchmark.jl")
 
 end
