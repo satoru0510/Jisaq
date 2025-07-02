@@ -211,16 +211,16 @@ function apply!(sv::AbstractStatevector, x::Ry)
 end
 
 function apply_diagonal1q!(sv::Statevector, loc::Int, a,b)
-        nq,vec = sv.nq, sv.vec
-        @inbounds for i in 1 : 2^loc : 2^nq
-            for j in i:i+2^(loc-1)-1
-                vec[j] *= b
-            end
-            for j in i+2^(loc-1):i+2^loc-1
-                vec[j] *= a
-            end
+    nq,vec = sv.nq, sv.vec
+    @inbounds for i in 1 : 2^loc : 2^nq
+        for j in i:i+2^(loc-1)-1
+            vec[j] *= b
         end
-        return sv
+        for j in i+2^(loc-1):i+2^loc-1
+            vec[j] *= a
+        end
+    end
+    return sv
 end
 
 function apply!(sv::AbstractStatevector, x::Rz)

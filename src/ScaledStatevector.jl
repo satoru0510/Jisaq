@@ -75,10 +75,22 @@ Base.copy(sv::ScaledStatevector) = ScaledStatevector(copy(sv.vec), sv.scalar)
 statevec(ssv::ScaledStatevector) = ssv |> vec |> statevec
 scaled_statevec(sv::Statevector) = scaled_statevec(sv |> vec, 1)
 
+Base.:*(sv::Statevector, s::Number) = scaled_statevec(sv.vec, s)
+Base.:*(s::Number, sv::Statevector) = scaled_statevec(sv.vec, s)
+
+function apply_diagonal1q!(ssv::ScaledStatevector, loc::Int, a,b)
+    nq,vec = ssv.nq, ssv.vec
+    bdiva = b / a
+    @inbounds for i in 1 : 2^loc : 2^nq
+        for j in i:i+2^(loc-1)-1
+            vec[j] *= bdiva
+        end
+    end
+    ssv.scalar *= a
+    return ssv
+end
+
 #TODO
-#apply_diagonal1q!
-#Base.:*(sv::Statevector, s::Number)
-#Base.:*(s::Number, sv::Statevector)
 
 function apply!(sv::ScaledStatevector, x::Rzz)
 end
