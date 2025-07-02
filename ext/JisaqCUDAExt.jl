@@ -202,6 +202,30 @@ function Jisaq.apply!(cusv::Statevector{<:CuArray}, ipa::I_plus_A)
     cusv
 end
 
+function Jisaq.apply!(sv::Statevector{<:CuArray}, x::Rzz)
+    function k(v, mask1, mask2, a,b)
+        tidx = threadIdx().x - 1
+        bidx = blockIdx().x - 1
+        idx = 1024*bidx + tidx
+        bit1 = idx & mask1 != 0
+        bit2 = idx & mask2 != 0
+        v[idx+1] *= (bit1 != bit2) ? a : b
+        return
+    end
+    nq,i,j = sv.nq, x.loc1, x.loc2
+    v = sv.vec
+    theta = x.theta
+    a,b = cis(theta/2), cis(-theta/2)
+    mask1 = 2^(i-1)
+    mask2 = 2^(j-1)
+    if length(v) ≤ 1024
+        @cuda blocks=1 threads=length(v) k(v, mask1, mask2, a,b)
+    else
+        @cuda blocks=length(v)÷(1024) threads=1024 k(v, mask1, mask2, a,b)
+    end
+    sv
+end
+
 """
     CUDA.cu(sv::Statevector)
 
