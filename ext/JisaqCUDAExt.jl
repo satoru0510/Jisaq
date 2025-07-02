@@ -137,8 +137,16 @@ function Jisaq.apply_diagonal1q!(cusv::Statevector{<:CuArray}, loc::Int, d1,d2)
     cusv
 end
 
+"""
+    CUDA.cu(sv::Statevector)
+
+Copy `sv` to GPU memory. If it is already on GPU, this function just returns `sv`.
+"""
+CUDA.cu(cusv::Statevector{<:CuArray}) = cusv
+CUDA.cu(sv::Statevector) = Statevector(CuArray(sv.vec) )
+Jisaq.cpu(cusv::Statevector{<:CuArray}) = Statevector(Array(cusv.vec) )
+
 #TODO
-#cu
 #CX
 #I+A
 #Rzz

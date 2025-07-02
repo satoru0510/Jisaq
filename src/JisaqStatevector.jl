@@ -305,7 +305,7 @@ function expect(sv::Statevector, obs::AbstractChannel)
 end
 
 function rand_statevec(rng, nq::Int)
-    raw = randn(rng, ComplexF64, 2^nq) |> statevec
+    raw = rand(rng, ComplexF64, 2^nq) * 2 .- (1+im) |> statevec
     normalize!(raw)
 end
 
@@ -320,13 +320,22 @@ Returns random `nq`-qubit statevector.
 """
 rand_statevec
 
-for fun in [:norm, :normalize, :normalize!]
-    @eval export $fun
-    @eval function LinearAlgebra.$fun(sv::Statevector)
-        $fun(sv.vec)
-        sv
-    end
+LinearAlgebra.norm(sv::Statevector) = norm(sv.vec)
+function LinearAlgebra.normalize(sv::Statevector)
+    Statevector(normalize(sv.vec))
 end
+function LinearAlgebra.normalize!(sv::Statevector)
+    normalize!(sv.vec)
+    sv
+end
+
+export cpu
+"""
+    cpu(sv::Statevector)
+
+Get `Statevector` on main memory. If `sv` is already on main memory, it returns `sv`.
+"""
+cpu(sv::Statevector) = sv
 
 mutable struct StatevectorSimulator <: Simulator
     boundscheck::Bool
