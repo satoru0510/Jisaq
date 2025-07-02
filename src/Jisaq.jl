@@ -44,6 +44,14 @@ CUDA version of `statevec`
 """
 function cu_statevec end
 
+export cu_rand_statevec
+"""
+    cu_rand_statevec([ty::Type{T}=ComplexF64], nq::Int)
+
+CUDA version of `rand_statevec`
+"""
+function cu_rand_statevec end
+
 include("JisaqCircuit.jl")
 include("JisaqOperator.jl")
 include("JisaqCircuitDrawer.jl")

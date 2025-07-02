@@ -18,6 +18,11 @@ function Jisaq.cu_statevec(nq::Int)
     cu_statevec(ComplexF64, nq)
 end
 
+function Jisaq.cu_rand_statevec(nq::Int)
+    raw = CUDA.rand(ComplexF64, 2^nq) * 2 .- (1+im) |> statevec
+    normalize!(raw)
+end
+
 function bit_insert(a, _2_pow_idx)
     rem = a % _2_pow_idx
     (a ⊻ rem) << 1 + rem
@@ -137,6 +142,32 @@ function Jisaq.apply_diagonal1q!(cusv::Statevector{<:CuArray}, loc::Int, d1,d2)
     cusv
 end
 
+function Jisaq.apply!(sv::Statevector{<:CuArray}, x::CX)
+    function k(v, i, j)
+        tidx = threadIdx().x - 1
+        bidx = blockIdx().x - 1
+        idx = 1024*bidx + tidx
+        offset = 1 + 1 << (i-1)
+        step = 1 << (j-1)
+        _i, _j = minmax(i,j)
+        _2_pow_i = 1 << (_i-1)
+        _2_pow_j = 1 << (_j-1)
+        first = bit_insert(bit_insert(idx, _2_pow_i), _2_pow_j) + offset
+        second = first + step
+        v[first],v[second] = v[second],v[first]
+        return
+    end
+    nq,v = sv.nq, sv.vec
+    i,j = x.ctrl_loc, x.targ_loc
+    arr = sv.vec
+    if length(arr) ≤ 1024
+        @cuda blocks=1 threads=length(arr)÷4 k(arr, i,j)
+    else
+        @cuda blocks=length(arr)÷(4096) threads=1024 k(arr, i,j)
+    end
+    sv
+end
+
 """
     CUDA.cu(sv::Statevector)
 
@@ -147,7 +178,6 @@ CUDA.cu(sv::Statevector) = Statevector(CuArray(sv.vec) )
 Jisaq.cpu(cusv::Statevector{<:CuArray}) = Statevector(Array(cusv.vec) )
 
 #TODO
-#CX
 #I+A
 #Rzz
 #TimeEvolution

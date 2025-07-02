@@ -304,6 +304,11 @@ function expect(sv::Statevector, obs::AbstractChannel)
     sv.vec ⋅ cp.vec
 end
 
+"""
+    rand_statevec(rng, nq::Int)
+
+Returns random `Statevector`.
+"""
 function rand_statevec(rng, nq::Int)
     raw = rand(rng, ComplexF64, 2^nq) * 2 .- (1+im) |> statevec
     normalize!(raw)
@@ -336,6 +341,7 @@ export cpu
 Get `Statevector` on main memory. If `sv` is already on main memory, it returns `sv`.
 """
 cpu(sv::Statevector) = sv
+Base.isapprox(sv1::Statevector, sv2::Statevector) = cpu(sv1).vec ≈ cpu(sv2).vec
 
 mutable struct StatevectorSimulator <: Simulator
     boundscheck::Bool
