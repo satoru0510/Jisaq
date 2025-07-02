@@ -90,12 +90,28 @@ function apply_diagonal1q!(ssv::ScaledStatevector, loc::Int, a,b)
     return ssv
 end
 
-#TODO
-
 function apply!(sv::ScaledStatevector, x::Rzz)
+    nq,i,j = sv.nq, x.loc1, x.loc2
+    _i, _j = minmax(i,j)
+    v = sv.vec
+    theta = x.theta
+    a,b = cis(theta/2), cis(-theta/2)
+    mask1 = 2^(_i-1)
+    mask2 = 2^(_j-1)
+    bdiva = b / a
+    for k in 0:2^(nq-2)-1
+        idx1 = bit_insert(bit_insert(k, mask1), mask2)
+        idx2 = idx1 | mask1 | mask2
+        @inbounds v[idx1+1] *= bdiva
+        @inbounds v[idx2+1] *= bdiva
+    end
+    sv.scalar *= a
+    sv
 end
 
 function expect(sv::ScaledStatevector, obs::AbstractChannel)
+    cp = apply(sv, obs)
+    (sv.vec ⋅ cp.vec) * sv.scalar' * cp.scalar
 end
 
 LinearAlgebra.norm(sv::ScaledStatevector) = norm(sv.vec) * abs(sv.scalar)^2

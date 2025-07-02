@@ -263,6 +263,7 @@ function apply!(sv::AbstractStatevector, x::I_plus_A)
             v[idx2] = x * bc + y * a12
         end
     end
+    sv
 end
 
 function apply!(sv::AbstractStatevector, x::Rxx)
@@ -330,6 +331,7 @@ function apply!(sv::Statevector, x::Rzz)
         bit2 = k & mask2 != 0
         @inbounds v[k+1] *= (bit1 != bit2) ? a : b
     end
+    sv
 end
 
 function apply!(sv::AbstractStatevector, te::TimeEvolution)
@@ -338,6 +340,7 @@ function apply!(sv::AbstractStatevector, te::TimeEvolution)
     h_mat = mat(nq, h)
     v,_ = exponentiate(-im*h_mat, te.t, sv.vec)
     sv.vec = v
+    sv
 end
 
 """
