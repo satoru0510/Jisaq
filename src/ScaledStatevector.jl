@@ -1,4 +1,4 @@
-export ScaledStatevector
+export ScaledStatevector, scaled_statevec
 
 mutable struct ScaledStatevector{T <: AbstractVector} <: AbstractStatevector
     nq::Int
@@ -72,9 +72,13 @@ Make a copy of a ScaledStatevector `sv`.
 """
 Base.copy(sv::ScaledStatevector) = ScaledStatevector(copy(sv.vec), sv.scalar)
 
+statevec(ssv::ScaledStatevector) = ssv |> vec |> statevec
+scaled_statevec(sv::Statevector) = scaled_statevec(sv |> vec, 1)
+
 #TODO
-#Statevector <-> ScaledStatevector
 #apply_diagonal1q!
+#Base.:*(sv::Statevector, s::Number)
+#Base.:*(s::Number, sv::Statevector)
 
 function apply!(sv::ScaledStatevector, x::Rzz)
 end

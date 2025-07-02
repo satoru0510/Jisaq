@@ -440,7 +440,6 @@ Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator(
 #TODO
 #apply!(sv::Statevector, Scale)
 #apply!(sv::Statevector, Add)
-#P0, P1
 #RxxRzz
 #inner_prod
 #fidelity

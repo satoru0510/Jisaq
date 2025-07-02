@@ -65,7 +65,8 @@ function append!(canvas::Matrix{Char}, cursor::Vector{Int}, x::Union{X,Y,Z,H,P0,
     canvas
 end
 
-function append!(canvas::Matrix{Char}, cursor::Vector{Int}, x::Union{Rxx,Ryy,Rzz,RyyRxx,RzzRyy}, style::UnicodeDrawingStyle)
+function append!(canvas::Matrix{Char}, cursor::Vector{Int}, 
+        x::Union{Rxx,Ryy,Rzz,RyyRxx,RzzRyy,RxxRzz,RxxRyy,RyyRzz,RzzRxx}, style::UnicodeDrawingStyle)
     loc1, loc2 = locs(x)
     cm = chmat(typeof(x), loc2-loc1)
     len = size(cm)[2]
