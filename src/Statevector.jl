@@ -183,7 +183,7 @@ end
 
 function apply!(sv::AbstractStatevector, x::CX)
     nq,v = sv.nq, sv.vec
-    i,j = x.ctrl_loc, x.targ_loc
+    i,j = locs(x)
     offset = 1 + 2^(i-1)
     step = 2^(j-1)
     _i, _j = minmax(i,j)
@@ -544,4 +544,3 @@ Base.run(init::Statevector, cir::Circuit, sim::StatevectorSimulator) = run!(copy
 Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator())
 
 #TODO
-#CZ

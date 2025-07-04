@@ -202,7 +202,7 @@ function Jisaq.apply!(sv::Statevector{<:CuArray}, x::CX)
         return
     end
     nq,v = sv.nq, sv.vec
-    i,j = x.ctrl_loc, x.targ_loc
+    i,j = locs(x)
     arr = sv.vec
     if length(arr) ≤ 1024
         @cuda blocks=1 threads=length(arr)÷4 k(arr, i,j)

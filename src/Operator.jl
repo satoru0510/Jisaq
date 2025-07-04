@@ -48,17 +48,29 @@ struct U2{T<:AbstractMatrix} <: Operator
 end
 locs(x::U2) = (x.loc,)
 
+export Controlled, controlled
+struct Controlled{O<:Operator} <: Operator
+    ctrl_loc::Int
+    op::O
+end
+
+function controlled(ctrl_loc::Int, op::Operator)
+    Controlled(ctrl_loc, op)
+end
+
+function Base.show(io::IO, x::Controlled)
+    print(io, x.ctrl_loc, " controlled-", x.op )
+end
+
+locs(x::Controlled) = (x.ctrl_loc, locs(x.op)...)
+
 export CX
 """
     CX(ctrl_loc::Int, targ_loc::Int)
 
 CX (controlled-NOT) gate
 """
-struct CX <: Operator
-    ctrl_loc::Int
-    targ_loc::Int
-end
-locs(x::CX) = (x.ctrl_loc, x.targ_loc)
+const CX = Controlled{X}
 
 export CZ
 """
@@ -66,11 +78,7 @@ export CZ
 
 CZ (controlled-Z) gate
 """
-struct CZ <: Operator
-    loc1::Int
-    loc2::Int
-end
-locs(x::CZ) = (x.loc1, x.loc2)
+const CZ = Controlled{Z}
 
 # single-qubit rotation gate
 for g in [:Rx, :Ry, :Rz]
