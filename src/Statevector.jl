@@ -125,15 +125,19 @@ function apply!(sv::AbstractStatevector, x::Y)
     return sv
 end
 
-function apply!(sv::AbstractStatevector, x::Z)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
+function apply_phase_1q_cpu!(sv::AbstractStatevector, loc::Int, ph::Number)
+    nq,vec = sv.nq, sv.vec
     for i in 1 : 2^loc : 2^nq
         for j in i+2^(loc-1):i+2^loc-1
-            @inbounds vec[j] *= -1
+            @inbounds vec[j] *= ph
         end
     end
     return sv
 end
+
+apply!(sv::AbstractStatevector, x::Z) = apply_phase_1q_cpu!(sv, x.loc, -1)
+apply!(sv::AbstractStatevector, x::S) = apply_phase_1q_cpu!(sv, x.loc, im)
+apply!(sv::AbstractStatevector, x::T) = apply_phase_1q_cpu!(sv, x.loc, exp(im*π/4) )
 
 function apply!(sv::AbstractStatevector, x::S)
     nq,loc,vec = sv.nq, x.loc, sv.vec

@@ -74,26 +74,29 @@ function Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Y)
     cusv
 end
 
-function Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Z)
-    function k(a, loc)
+function apply_phase_1q_cuda!(cusv::Statevector{<:CuArray}, loc::Int, ph::Number)
+    function k(a, loc, ph)
         i = threadIdx().x - 1
         j = blockIdx().x - 1
         idx = 1024j + i
         lm1 = loc - 1
-        idx1 = bit_insert(idx, 1 << lm1 )
+        idx1 = Jisaq.bit_insert(idx, 1 << lm1 )
         idx2 = idx1 ⊻ 1 << lm1 + 1
-        a[idx2] *= -1
+        a[idx2] *= ph
         return
     end
-    loc = x.loc
     arr = cusv.vec
     if length(arr) ≤ 1024
-        @cuda blocks=1 threads=length(arr)÷2 k(arr, loc)
+        @cuda blocks=1 threads=length(arr)÷2 k(arr, loc, ph)
     else
-        @cuda blocks=length(arr)÷(2048) threads=1024 k(arr, loc)
+        @cuda blocks=length(arr)÷(2048) threads=1024 k(arr, loc, ph)
     end
     cusv
 end
+
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Z) = apply_phase_1q_cuda!(cusv, x.loc, -1)
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::S) = apply_phase_1q_cuda!(cusv, x.loc, im)
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::T) = apply_phase_1q_cuda!(cusv, x.loc, exp(im*π/4) )
 
 function Jisaq.apply!(cusv::Statevector{<:CuArray}, u::U2)
     function k(a, loc, u1,u2,u3,u4)
