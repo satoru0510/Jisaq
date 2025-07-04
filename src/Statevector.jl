@@ -344,6 +344,26 @@ function apply!(sv::AbstractStatevector, x::RyyRzz)
     apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
 end
 
+function apply!(sv::AbstractStatevector, x::RxxRzz)
+    xx,zz = x.theta1/2, x.theta2/2
+    cz,cx,sz,sx = cos(zz), cos(xx), sin(zz), sin(xx)
+    d1 = cz * cx - im * sz * cx
+    d2 = d1'
+    b = -sx * sz - im * cz * sx
+    c = sx * sz - im * cz * sx
+    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+end
+
+function apply!(sv::AbstractStatevector, x::RzzRxx)
+    zz,xx = x.theta1/2, x.theta2/2
+    cz,cx,sz,sx = cos(zz), cos(xx), sin(zz), sin(xx)
+    d1 = cz * cx - im * sz * cx
+    d2 = d1'
+    b = -sx * sz - im * cz * sx
+    c = sx * sz - im * cz * sx
+    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+end
+
 function apply!(sv::Statevector, x::Rzz)
     nq,i,j = sv.nq, x.loc1, x.loc2
     v = sv.vec
