@@ -109,6 +109,11 @@ function apply!(sv::ScaledStatevector, x::Rzz)
     sv
 end
 
+function apply!(sv::ScaledStatevector, x::Scale)
+    apply!(sv, x.op)
+    sv.scalar *= x.scalar
+end
+
 function expect(sv::ScaledStatevector, obs::AbstractChannel)
     cp = apply(sv, obs)
     (sv.vec ⋅ cp.vec) * sv.scalar' * cp.scalar
@@ -125,3 +130,6 @@ function Base.:*(s::Number, ssv::ScaledStatevector)
     ssv.scalar = s * ssv.scalar
     ssv
 end
+
+#TODO
+#S, T

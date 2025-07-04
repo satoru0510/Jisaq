@@ -1,5 +1,5 @@
 export AbstractStatevector, Statevector, StatevectorSimulator
-export statevec, rand_statevec, expect, nqubits
+export statevec, rand_statevec, expect, nqubits, undef_statevec
 
 using LinearAlgebra, Random
 
@@ -343,6 +343,50 @@ function apply!(sv::AbstractStatevector, te::TimeEvolution)
     sv
 end
 
+function apply!(sv::Statevector, x::Add)
+    cs = x.contents
+    res = apply(sv, cs[1])
+    buf = undef_statevec(sv.nq)
+    for i in 2 : length(cs)
+        copy!(buf, sv)
+        apply!(buf, cs[i])
+        add!(res, buf)
+    end
+    sv.vec = res.vec
+end
+
+function apply!(sv::Statevector, x::Scale)
+    apply!(sv, x.op)
+    sv.vec *= x.scalar
+end
+
+function Base.:+(sv1::AbstractStatevector, sv2::AbstractStatevector)
+    Statevector(vec(sv1) + vec(sv2) )
+end
+
+export add!
+function add!(sv1::Statevector, sv2::Statevector)
+    if nqubits(sv1) != nqubits(sv2)
+        error()
+    end
+    for i in 1:length(sv1.vec)
+        sv1.vec[i] += sv2.vec[i]
+    end
+    sv1
+end
+
+function Base.copy!(dest::Statevector, src::Statevector)
+    if nqubits(dest) != nqubits(src)
+        error()
+    end
+    dv = dest.vec
+    sv = src.vec
+    for i in 1 : length(dv)
+        dv[i] = sv[i]
+    end
+    dest
+end
+
 """
     expect(sv::Statevector, obs::AbstractChannel)
 
@@ -373,6 +417,13 @@ end
 Returns random `nq`-qubit statevector.
 """
 rand_statevec
+
+function undef_statevec(T::Type{<:Number}, nq::Int)
+    vec = Vector{T}(undef, 2^nq)
+    statevec(vec)
+end
+
+undef_statevec(nq::Int) = undef_statevec(ComplexF64, nq)
 
 LinearAlgebra.norm(sv::Statevector) = norm(sv.vec)
 function LinearAlgebra.normalize(sv::Statevector)
@@ -443,6 +494,7 @@ Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator(
 #TODO
 #apply!(sv::Statevector, Scale)
 #apply!(sv::Statevector, Add)
+#S,T
 #RxxRzz
 #inner_prod
 #fidelity

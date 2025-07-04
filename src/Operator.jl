@@ -236,7 +236,7 @@ function mat(::Type{RzzRyy}, θ1::Real, θ2::Real)
 end
 mat(::Type{I_plus_A}) = sparse([d1 0 0 b;0 d2 c 0;0 c d2 0;b 0 0 d1])
 
-function mat(nq::Int, x::Union{X,Y,Z,H,Id,P0,P1,U2})
+function mat(nq::Int, x::Union{X,Y,Z,H,Id,P0,P1,U2,S,T})
     m = mat(typeof(x)) |> sparse
     id = convert(typeof(m), I(2))
     loc = x.loc
@@ -358,3 +358,5 @@ struct TimeEvolution{O<:Operator, T<:Number} <: Operator
 end
 mat(nq::Int, te::TimeEvolution) = exp(Matrix(mat(nq, -im * te.hamilt * te.t)))
 locs(te::TimeEvolution) = locs(te.hamilt)
+
+#TODO
