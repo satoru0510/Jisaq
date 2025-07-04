@@ -139,27 +139,6 @@ apply!(sv::AbstractStatevector, x::Z) = apply_phase_1q_cpu!(sv, x.loc, -1)
 apply!(sv::AbstractStatevector, x::S) = apply_phase_1q_cpu!(sv, x.loc, im)
 apply!(sv::AbstractStatevector, x::T) = apply_phase_1q_cpu!(sv, x.loc, exp(im*π/4) )
 
-function apply!(sv::AbstractStatevector, x::S)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
-    for i in 1 : 2^loc : 2^nq
-        for j in i+2^(loc-1):i+2^loc-1
-            @inbounds vec[j] *= im
-        end
-    end
-    return sv
-end
-
-function apply!(sv::AbstractStatevector, x::T)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
-    ph = exp(im*π/4)
-    for i in 1 : 2^loc : 2^nq
-        for j in i+2^(loc-1):i+2^loc-1
-            @inbounds vec[j] *= ph
-        end
-    end
-    return sv
-end
-
 function apply!(sv::AbstractStatevector, x::P0)
     nq,loc,vec = sv.nq, x.loc, sv.vec
     for i in 1 : 2^loc : 2^nq
@@ -213,6 +192,21 @@ function apply!(sv::AbstractStatevector, x::CX)
     for k in 0 : 2^(nq-2)-1
         first = bit_insert(bit_insert(k, _2_pow_i), _2_pow_j) + offset
         swap_rows!(v, first, first+step)
+    end
+    sv
+end
+
+function apply!(sv::AbstractStatevector, x::CZ)
+    nq,v = sv.nq, sv.vec
+    i,j = locs(x)
+    _i, _j = minmax(i, j)
+    mask1 = 1 << (_i-1)
+    mask2 = 1 << (_j-1)
+    for m0 in 0 : length(v)÷4-1
+        m1 = Jisaq.bit_insert(m0, mask1)
+        m2 = Jisaq.bit_insert(m1, mask2)
+        idx = m2 | mask1 | mask2
+        v[idx+1] *= -1
     end
     sv
 end
@@ -486,6 +480,15 @@ function LinearAlgebra.normalize!(sv::Statevector)
     sv
 end
 
+export inner_prod
+inner_prod(sv1::AbstractStatevector, sv2::AbstractStatevector) = vec(sv1) ⋅ vec(sv2)
+inner_prod(sv1::AbstractStatevector, sv2::ScaledStatevector) = (vec(sv1) ⋅ sv2.vec) * sv2.scalar
+inner_prod(sv1::ScaledStatevector, sv2::AbstractStatevector) = (sv1.vec ⋅ vec(sv2)) * sv1.scalar'
+inner_prod(sv1::ScaledStatevector, sv2::ScaledStatevector) = (sv1.vec ⋅ sv2.vec) * sv1.scalar' * sv2.scalar
+
+export fidelity
+fidelity(sv1::AbstractStatevector, sv2::AbstractStatevector) = norm(inner_prod(sv1, sv2) )^2
+
 export cpu
 """
     cpu(sv::Statevector)
@@ -545,6 +548,3 @@ Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator(
 
 #TODO
 #CZ
-#RxxRzz
-#inner_prod
-#fidelity

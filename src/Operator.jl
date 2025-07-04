@@ -60,6 +60,18 @@ struct CX <: Operator
 end
 locs(x::CX) = (x.ctrl_loc, x.targ_loc)
 
+export CZ
+"""
+    CZ(loc1::Int, loc2::Int)
+
+CZ (controlled-Z) gate
+"""
+struct CZ <: Operator
+    loc1::Int
+    loc2::Int
+end
+locs(x::CZ) = (x.loc1, x.loc2)
+
 # single-qubit rotation gate
 for g in [:Rx, :Ry, :Rz]
     name = string(g)
@@ -195,6 +207,7 @@ mat(::Type{P1}) = Diagonal([0, 1])
 mat(::Type{S}) = Diagonal([1, im])
 mat(::Type{T}) = Diagonal([1, exp(im*π/4)])
 mat(::Type{CX}) = sparse([1 0 0 0; 0 0 0 1; 0 0 1 0; 0 1 0 0])
+mat(::Type{CZ}) = Diagonal([1, 1, 1, -1])
 mat(::Type{Rx}, θ::Real) = [cos(θ/2) -im*sin(θ/2); -im*sin(θ/2) cos(θ/2)]
 mat(::Type{Ry}, θ::Real) = [cos(θ/2) -sin(θ/2); sin(θ/2) cos(θ/2)]
 mat(::Type{Rz}, θ::Real) = Diagonal([cis(-θ/2), cis(θ/2)])
@@ -287,7 +300,7 @@ function mat(nq::Int, x::Union{Rx,Ry,Rz})
     ret
 end
 
-Base.eltype(::Union{X,Z,Id,P0,P1,CX}) = Int
+Base.eltype(::Union{X,Z,Id,P0,P1,CX,CZ}) = Int
 Base.eltype(::Union{H,Ry}) = Float64
 Base.eltype(::Union{Rx,Rz,Rxx,Ryy,Rzz,RyyRxx,RzzRyy}) = ComplexF64
 Base.eltype(x::U2) = eltype(x.mat)
