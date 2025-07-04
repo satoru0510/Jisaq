@@ -482,9 +482,6 @@ end
 
 export inner_prod
 inner_prod(sv1::AbstractStatevector, sv2::AbstractStatevector) = vec(sv1) ⋅ vec(sv2)
-inner_prod(sv1::AbstractStatevector, sv2::ScaledStatevector) = (vec(sv1) ⋅ sv2.vec) * sv2.scalar
-inner_prod(sv1::ScaledStatevector, sv2::AbstractStatevector) = (sv1.vec ⋅ vec(sv2)) * sv1.scalar'
-inner_prod(sv1::ScaledStatevector, sv2::ScaledStatevector) = (sv1.vec ⋅ sv2.vec) * sv1.scalar' * sv2.scalar
 
 export fidelity
 fidelity(sv1::AbstractStatevector, sv2::AbstractStatevector) = norm(inner_prod(sv1, sv2) )^2
