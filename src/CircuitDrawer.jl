@@ -21,8 +21,9 @@ function UnicodeDrawingStyle(;prefix_cir=1, postfix_cir=1, prefix_global=1, post
     UnicodeDrawingStyle(prefix_cir, postfix_cir, prefix_global, postfix_global)
 end
 
-chmat(x::Type{<:Union{X,Y,Z,H,P0,P1,Rx,Ry,Rz,S,T}}) = hcat(string(nameof(x))...)
-chmat(::Type{CX}, n::Int) = (n>0 ? ['┬'; repeat('┼', n-1)...; 'X';] : ['X'; repeat('┼', -n+1)...; '┴';]) |> (x -> reshape(x, 3,1))
+chmat(x::Type{<:Union{X,Y,Z,H,P0,P1,Rx,Ry,Rz,S,T,U2}}) = hcat(string(nameof(x))...)
+chmat(::Type{CX}, n::Int) = (n>0 ? ['┬'; repeat('┼', n-1)...; 'X';] : ['X'; repeat('┼', -n-1)...; '┴';]) |> (x -> reshape(x, max(n+1,-n+1),1))
+chmat(::Type{CZ}, n::Int) = (n>0 ? ['┬'; repeat('┼', n-1)...; 'Z';] : ['Z'; repeat('┼', -n-1)...; '┴';]) |> (x -> reshape(x, max(n+1,-n+1),1))
 function chmat(x::Type{<:Union{Rxx,Ryy,Rzz}}, n::Int)
     c1, c2 = string(nameof(x))[2:3]
     if n>0
@@ -32,7 +33,7 @@ function chmat(x::Type{<:Union{Rxx,Ryy,Rzz}}, n::Int)
     end
 end
 
-function chmat(x::Type{<:Union{RyyRxx, RzzRyy}}, n::Int)
+function chmat(x::Type{<:Union{Rxx,Ryy,Rzz,RyyRxx,RzzRyy,RxxRzz,RxxRyy,RyyRzz,RzzRxx}}, n::Int)
     c1, c2, c3, c4 = string(nameof(x))[[2,3,5,6]]
     if n>0
         hcat(['R', repeat('┼', n-1)..., '┴'], [c3, repeat('─', n-1)..., c4], ['R', repeat('─', n-1)..., ' '], [c1, repeat('┼', n-1)..., c2])
@@ -62,6 +63,20 @@ function append!(canvas::Matrix{Char}, cursor::Vector{Int}, x::Union{X,Y,Z,H,P0,
     end
     canvas[loc, c:c+len-1] = cm
     cursor[loc] += len+1
+    canvas
+end
+
+function append!(canvas::Matrix{Char}, cursor::Vector{Int}, x::Union{CX,CZ}, style::UnicodeDrawingStyle)
+    ctrl_loc, targ_loc = locs(x)
+    cm = x |> typeof |> arg -> chmat(arg, targ_loc-ctrl_loc)
+    c = maximum(cursor[[ctrl_loc, targ_loc]])
+    nq = length(cursor)
+    if c + 1 - 1 > size(canvas)[2]
+        canvas = hcat(canvas, fill('─', nq, c + 1 - 1 - size(canvas)[2]) )
+    end
+    canvas[ctrl_loc:targ_loc, c] = cm
+    cursor[ctrl_loc] = c+1
+    cursor[targ_loc] = c+1
     canvas
 end
 
