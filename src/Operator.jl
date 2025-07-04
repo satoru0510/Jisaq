@@ -80,8 +80,8 @@ CZ (controlled-Z) gate
 """
 const CZ = Controlled{Z}
 
-(::Typle{CX})(ctrl_loc::Int, targ_loc::Int) = controlled(ctrl_loc, X(targ_loc) )
-(::Typle{CZ})(ctrl_loc::Int, targ_loc::Int) = controlled(ctrl_loc, Z(targ_loc) )
+(::Type{CX})(ctrl_loc::Int, targ_loc::Int) = controlled(ctrl_loc, X(targ_loc) )
+(::Type{CZ})(ctrl_loc::Int, targ_loc::Int) = controlled(ctrl_loc, Z(targ_loc) )
 
 
 # single-qubit rotation gate
