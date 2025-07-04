@@ -135,6 +135,27 @@ function apply!(sv::AbstractStatevector, x::Z)
     return sv
 end
 
+function apply!(sv::AbstractStatevector, x::S)
+    nq,loc,vec = sv.nq, x.loc, sv.vec
+    for i in 1 : 2^loc : 2^nq
+        for j in i+2^(loc-1):i+2^loc-1
+            @inbounds vec[j] *= im
+        end
+    end
+    return sv
+end
+
+function apply!(sv::AbstractStatevector, x::T)
+    nq,loc,vec = sv.nq, x.loc, sv.vec
+    ph = exp(im*π/4)
+    for i in 1 : 2^loc : 2^nq
+        for j in i+2^(loc-1):i+2^loc-1
+            @inbounds vec[j] *= ph
+        end
+    end
+    return sv
+end
+
 function apply!(sv::AbstractStatevector, x::P0)
     nq,loc,vec = sv.nq, x.loc, sv.vec
     for i in 1 : 2^loc : 2^nq

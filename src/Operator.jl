@@ -16,7 +16,7 @@ returns the locations of qubits which the operator to be applied
 """
 
 # define constant single-qubit unitary gates
-for g in [:X, :Y, :Z, :H, :Id, :P0, :P1]
+for g in [:X, :Y, :Z, :H, :Id, :P0, :P1, :S, :T]
     name = string(g)
     @eval export $g
     @eval begin
@@ -192,6 +192,8 @@ mat(::Type{Id}) = Diagonal([1, 1])
 mat(::Type{H}) = [1 1;1 -1] / sqrt(2)
 mat(::Type{P0}) = Diagonal([1, 0])
 mat(::Type{P1}) = Diagonal([0, 1])
+mat(::Type{S}) = Diagonal([1, im])
+mat(::Type{T}) = Diagonal([1, exp(im*π/4)])
 mat(::Type{CX}) = sparse([1 0 0 0; 0 0 0 1; 0 0 1 0; 0 1 0 0])
 mat(::Type{Rx}, θ::Real) = [cos(θ/2) -im*sin(θ/2); -im*sin(θ/2) cos(θ/2)]
 mat(::Type{Ry}, θ::Real) = [cos(θ/2) -sin(θ/2); sin(θ/2) cos(θ/2)]

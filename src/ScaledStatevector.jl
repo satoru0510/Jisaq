@@ -132,4 +132,3 @@ function Base.:*(s::Number, ssv::ScaledStatevector)
 end
 
 #TODO
-#S, T

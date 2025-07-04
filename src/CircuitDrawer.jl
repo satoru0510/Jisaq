@@ -21,7 +21,7 @@ function UnicodeDrawingStyle(;prefix_cir=1, postfix_cir=1, prefix_global=1, post
     UnicodeDrawingStyle(prefix_cir, postfix_cir, prefix_global, postfix_global)
 end
 
-chmat(x::Type{<:Union{X,Y,Z,H,P0,P1,Rx,Ry,Rz}}) = hcat(string(nameof(x))...)
+chmat(x::Type{<:Union{X,Y,Z,H,P0,P1,Rx,Ry,Rz,S,T}}) = hcat(string(nameof(x))...)
 chmat(::Type{CX}, n::Int) = (n>0 ? ['┬'; repeat('┼', n-1)...; 'X';] : ['X'; repeat('┼', -n+1)...; '┴';]) |> (x -> reshape(x, 3,1))
 function chmat(x::Type{<:Union{Rxx,Ryy,Rzz}}, n::Int)
     c1, c2 = string(nameof(x))[2:3]
@@ -51,7 +51,7 @@ function chmat_to_drawing(io::IO, chmat::Matrix{Char})
     end
 end
 
-function append!(canvas::Matrix{Char}, cursor::Vector{Int}, x::Union{X,Y,Z,H,P0,P1,Rx,Ry,Rz}, style::UnicodeDrawingStyle)
+function append!(canvas::Matrix{Char}, cursor::Vector{Int}, x::Union{X,Y,Z,H,P0,P1,Rx,Ry,Rz,S,T}, style::UnicodeDrawingStyle)
     cm = x |> typeof |> chmat
     loc = locs(x)[1]
     len = size(cm)[2]
