@@ -22,8 +22,10 @@ function Base.show(io::IO, cir::Circuit)
     end
 end
 
-function apply!(sv::AbstractState, cir::Circuit)
-    #TODO: boundscheck
+function apply!(sv::AbstractState, cir::Circuit; boundscheck=true)
+    if boundscheck && nqubits(sv) < loc_max(cir)
+        error("bounds error: loc_max=$(loc_max(cir)), nqubits(st)=$(nqubits(sv))")
+    end
     for g in cir.gates
         apply!(sv, g)
     end
@@ -31,3 +33,4 @@ function apply!(sv::AbstractState, cir::Circuit)
 end
 
 locs(cir::Circuit) = Tuple(1:loc_max(cir))
+loc_max(cir::Circuit) = maximum(maximum.(locs.(cir.gates)))

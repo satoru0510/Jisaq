@@ -129,4 +129,3 @@ function draw(cir::Circuit, style::Symbol)
 end
 
 init_drawing(nq::Int) = fill('─', nq,1)
-loc_max(cir::Circuit) = maximum(maximum.(locs.(cir.gates)))

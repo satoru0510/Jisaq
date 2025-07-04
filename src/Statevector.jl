@@ -364,6 +364,11 @@ function apply!(sv::AbstractStatevector, te::TimeEvolution)
     sv
 end
 
+function apply!(sv::AbstractStatevector, scalar::Number)
+    sv.vec *= scalar
+    sv
+end
+
 function apply!(sv::Statevector, x::Add)
     cs = x.contents
     res = apply(sv, cs[1])
@@ -374,11 +379,13 @@ function apply!(sv::Statevector, x::Add)
         add!(res, buf)
     end
     sv.vec = res.vec
+    sv
 end
 
 function apply!(sv::Statevector, x::Scale)
     apply!(sv, x.op)
     sv.vec *= x.scalar
+    sv
 end
 
 function Base.:+(sv1::AbstractStatevector, sv2::AbstractStatevector)
@@ -513,9 +520,7 @@ Base.run(init::Statevector, cir::Circuit, sim::StatevectorSimulator) = run!(copy
 Base.run(init::Statevector, cir::Circuit) = run(init, cir, StatevectorSimulator())
 
 #TODO
-#apply!(sv::Statevector, Scale)
-#apply!(sv::Statevector, Add)
-#S,T
+#CZ
 #RxxRzz
 #inner_prod
 #fidelity
