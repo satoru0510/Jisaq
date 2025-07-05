@@ -145,32 +145,32 @@ end
 
 apply!(mps::OpenMPS, x::Id) = mps
 
-function apply!(mps::OpenMPS, x::Union{X,Y,Z,H,U2})
+function apply!(mps::OpenMPS, x::Union{X,Y,Z,H,U2,P0,P1,T,S,Tdag,Sdag})
     m = mat(typeof(x))
     t = TensorMap(m, ℂ^2, ℂ^2)
-    apply!(mps, t, x.loc)
+    apply!(mps, t, x.locs[1])
 end
 
 function apply!(mps::OpenMPS, x::Union{Rx,Ry,Rz})
     m = mat(typeof(x), x.theta)
     t = TensorMap(m, ℂ^2, ℂ^2)
-    apply!(mps, t, x.loc)
+    apply!(mps, t, x.locs[1])
 end
 
-function apply!(mps::OpenMPS, x::Union{CX})
+function apply!(mps::OpenMPS, x::Union{CX,CZ})
     m = mat(typeof(x))
     t = TensorMap(m, ℂ^2 * ℂ^2, ℂ^2 * ℂ^2)
-    apply!(mps, t, x.ctrl_loc, x.targ_loc)
+    apply!(mps, t, x.locs...)
 end
 
 function apply!(mps::OpenMPS, x::Union{Rxx, Ryy, Rzz})
     m = mat(typeof(x), x.theta)
     t = TensorMap(m, ℂ^2 * ℂ^2, ℂ^2 * ℂ^2)
-    apply!(mps, t, x.loc1, x.loc2)
+    apply!(mps, t, x.locs...)
 end
 
-function apply!(mps::OpenMPS, x::Union{RyyRxx, RzzRyy})
+function apply!(mps::OpenMPS, x::Union{RyyRxx, RzzRyy, RxxRzz, RxxRyy, RyyRzz, RzzRxx})
     m = mat(typeof(x), x.theta1, x.theta2)
     t = TensorMap(m, ℂ^2 * ℂ^2, ℂ^2 * ℂ^2)
-    apply!(mps, t, x.loc1, x.loc2)
+    apply!(mps, t, x.locs...)
 end

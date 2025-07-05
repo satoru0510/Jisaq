@@ -1,3 +1,5 @@
+export AbstractDensityMatrix, DensityMatrix, density
+
 struct Yconj <: Operator
     locs::Tuple{Int}
 end
@@ -43,6 +45,10 @@ for g in [:Rxx, :Ryy, :Rzz]
     @eval Main.conj(x::$g) = $g(x.locs, -x.theta)
 end
 
+for g in [:RxxRyy, :RyyRzz, :RzzRxx, :RzzRyy, :RyyRxx, :RxxRzz]
+    @eval Main.conj(x::$g) = $g(x.locs, -x.theta1, -x.theta2)
+end
+
 abstract type AbstractDensityMatrix <: AbstractState end
 
 mutable struct DensityMatrix{T<:AbstractMatrix} <: AbstractDensityMatrix
@@ -53,6 +59,10 @@ function density(ty::Type{<:Number}, nq::Int)
     m = zeros(ty, 2^nq, 2^nq)
     m[1] = 1
     DensityMatrix(m)
+end
+
+function density(sv::Statevector)
+    DensityMatrix(sv.vec * sv.vec')
 end
 
 function Base.show(io::IO, dm::DensityMatrix)
@@ -89,3 +99,9 @@ function expect(dm::DensityMatrix, op::Union{Operator, Circuit{<:Operator}})
     nq = nqubits(dm)
     tr(dm.mat * mat(nq, op) )
 end
+
+function Base.copy(dmat::Jisaq.DensityMatrix)
+    Jisaq.DensityMatrix(copy(dmat.mat) )
+end
+
+mat(dm::DensityMatrix) = dm.mat

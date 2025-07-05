@@ -58,6 +58,7 @@ include("CircuitDrawer.jl")
 include("Statevector.jl")
 include("ScaledStatevector.jl")
 include("DensityMatrix.jl")
+include("NoiseChannel.jl")
 include("OpenMPS.jl")
 include("Benchmark.jl")
 
