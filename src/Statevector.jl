@@ -347,7 +347,7 @@ function apply!(sv::AbstractStatevector, x::RxxRzz)
     d2 = d1'
     b = -sx * sz - im * cz * sx
     c = sx * sz - im * cz * sx
-    apply!(sv, I_plus_A(x.loc[1], x.locs[2], d1,d2,b,c))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d1,d2,b,c))
 end
 
 function apply!(sv::AbstractStatevector, x::RzzRxx)
@@ -357,7 +357,7 @@ function apply!(sv::AbstractStatevector, x::RzzRxx)
     d2 = d1'
     b = -sx * sz - im * cz * sx
     c = sx * sz - im * cz * sx
-    apply!(sv, I_plus_A(x.loc[1], x.loc[2], d1,d2,b,c))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d1,d2,b,c))
 end
 
 function apply!(sv::Statevector, x::Rzz)
