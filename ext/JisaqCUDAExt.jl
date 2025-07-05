@@ -41,7 +41,7 @@ function Jisaq.apply!(cusv::Statevector{<:CuArray}, x::X)
         a[idx1],a[idx2] = a[idx2], a[idx1]
         return
     end
-    loc = x.loc
+    loc = x.locs[1]
     arr = cusv.vec
     if length(arr) ≤ 1024
         @cuda blocks=1 threads=length(arr)÷2 k(arr, loc)
@@ -64,7 +64,7 @@ function Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Y)
         a[idx1],a[idx2] = a[idx2]*(-im), a[idx1]*im
         return
     end
-    loc = x.loc
+    loc = x.locs[1]
     arr = cusv.vec
     if length(arr) ≤ 1024
         @cuda blocks=1 threads=length(arr)÷2 k(arr, loc)
@@ -94,11 +94,11 @@ function apply_phase_1q_cuda!(cusv::Statevector{<:CuArray}, loc::Int, ph::Number
     cusv
 end
 
-Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Z) = apply_phase_1q_cuda!(cusv, x.loc, -1)
-Jisaq.apply!(cusv::Statevector{<:CuArray}, x::S) = apply_phase_1q_cuda!(cusv, x.loc, im)
-Jisaq.apply!(cusv::Statevector{<:CuArray}, x::T) = apply_phase_1q_cuda!(cusv, x.loc, exp(im*π/4) )
-Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Sdag) = apply_phase_1q_cuda!(cusv, x.loc, -im )
-Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Tdag) = apply_phase_1q_cuda!(cusv, x.loc, exp(-im*π/4) )
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Z) = apply_phase_1q_cuda!(cusv, x.locs[1], -1)
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::S) = apply_phase_1q_cuda!(cusv, x.locs[1], im)
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::T) = apply_phase_1q_cuda!(cusv, x.locs[1], exp(im*π/4) )
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Sdag) = apply_phase_1q_cuda!(cusv, x.locs[1], -im )
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Tdag) = apply_phase_1q_cuda!(cusv, x.locs[1], exp(-im*π/4) )
 
 function apply!(cusv::Statevector{<:CuArray}, x::P0)
     function k(a, loc)
@@ -112,7 +112,7 @@ function apply!(cusv::Statevector{<:CuArray}, x::P0)
         return
     end
     arr = cusv.vec
-    loc = x.loc
+    loc = x.locs[1]
     if length(arr) ≤ 1024
         @cuda blocks=1 threads=length(arr)÷2 k(arr, loc)
     else
@@ -132,7 +132,7 @@ function apply!(cusv::Statevector{<:CuArray}, x::P1)
         return
     end
     arr = cusv.vec
-    loc = x.loc
+    loc = x.locs[1]
     if length(arr) ≤ 1024
         @cuda blocks=1 threads=length(arr)÷2 k(arr, loc)
     else
@@ -157,7 +157,7 @@ function Jisaq.apply!(cusv::Statevector{<:CuArray}, u::U2)
         return
     end
     arr = cusv.vec
-    loc = u.loc
+    loc = u.locs[1]
     u1,u3,u2,u4 = u.mat
     if length(arr) ≤ 1024
         @cuda blocks=1 threads=length(arr)÷2 k(arr, loc, u1,u2,u3,u4)
@@ -257,7 +257,7 @@ function Jisaq.apply!(cusv::Statevector{<:CuArray}, ipa::I_plus_A)
         return
     end
     a1,a2,b,c = ipa.d1, ipa.d2, ipa.b, ipa.c
-    i,j,nq,v = ipa.loc1, ipa.loc2, cusv.nq, cusv.vec
+    i,j,nq,v = ipa.locs[1], ipa.locs[2], cusv.nq, cusv.vec
     mask = 2^(i-1) + 2^(j-1)
     mini,maxi = minmax(i,j)
     _2_pow_maxim1 = 2^(maxi-1)
@@ -280,7 +280,7 @@ function Jisaq.apply!(sv::Statevector{<:CuArray}, x::Rzz)
         v[idx+1] *= (bit1 != bit2) ? a : b
         return
     end
-    nq,i,j = sv.nq, x.loc1, x.loc2
+    nq,i,j = sv.nq, x.locs[1], x.locs[2]
     v = sv.vec
     theta = x.theta
     a,b = cis(theta/2), cis(-theta/2)

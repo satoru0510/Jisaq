@@ -100,7 +100,7 @@ end
 apply!(sv::AbstractStatevector, ::Id) = sv
 
 function apply!(sv::AbstractStatevector, x::X)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
+    nq,loc,vec = sv.nq, x.locs[1], sv.vec
     _2_pow_locm1 = 2^(loc - 1)
     _2_pow_loc_m1 = 2^loc-1
     for i in 1 : 2^loc : 2^nq
@@ -110,7 +110,7 @@ function apply!(sv::AbstractStatevector, x::X)
 end
 
 function apply!(sv::AbstractStatevector, x::Y)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
+    nq,loc,vec = sv.nq, x.locs[1], sv.vec
     _2_pow_locm1 = 2^(loc - 1)
     _2_pow_loc_m1 = 2^loc-1
     for i in 1 : 2^loc : 2^nq
@@ -135,14 +135,14 @@ function apply_phase_1q_cpu!(sv::AbstractStatevector, loc::Int, ph::Number)
     return sv
 end
 
-apply!(sv::AbstractStatevector, x::Z) = apply_phase_1q_cpu!(sv, x.loc, -1)
-apply!(sv::AbstractStatevector, x::S) = apply_phase_1q_cpu!(sv, x.loc, im)
-apply!(sv::AbstractStatevector, x::T) = apply_phase_1q_cpu!(sv, x.loc, exp(im*π/4) )
-apply!(sv::AbstractStatevector, x::Sdag) = apply_phase_1q_cpu!(sv, x.loc, -im )
-apply!(sv::AbstractStatevector, x::Tdag) = apply_phase_1q_cpu!(sv, x.loc, exp(-im*π/4) )
+apply!(sv::AbstractStatevector, x::Z) = apply_phase_1q_cpu!(sv, x.locs[1], -1)
+apply!(sv::AbstractStatevector, x::S) = apply_phase_1q_cpu!(sv, x.locs[1], im)
+apply!(sv::AbstractStatevector, x::T) = apply_phase_1q_cpu!(sv, x.locs[1], exp(im*π/4) )
+apply!(sv::AbstractStatevector, x::Sdag) = apply_phase_1q_cpu!(sv, x.locs[1], -im )
+apply!(sv::AbstractStatevector, x::Tdag) = apply_phase_1q_cpu!(sv, x.locs[1], exp(-im*π/4) )
 
 function apply!(sv::AbstractStatevector, x::P0)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
+    nq,loc,vec = sv.nq, x.locs[1], sv.vec
     for i in 1 : 2^loc : 2^nq
         for j in i+2^(loc-1):i+2^loc-1
             @inbounds vec[j] = 0
@@ -152,7 +152,7 @@ function apply!(sv::AbstractStatevector, x::P0)
 end
 
 function apply!(sv::AbstractStatevector, x::P1)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
+    nq,loc,vec = sv.nq, x.locs[1], sv.vec
     _2_pow_locm1 = 2^(loc - 1)
     for i in 1 : 2^loc : 2^nq
         for j in i : i+_2_pow_locm1-1
@@ -163,7 +163,7 @@ function apply!(sv::AbstractStatevector, x::P1)
 end
 
 function apply!(sv::AbstractStatevector, x::U2)
-    nq,loc,vec = sv.nq, x.loc, sv.vec
+    nq,loc,vec = sv.nq, x.locs[1], sv.vec
     a,c,b,d = x.mat
     step1 = 1 << (loc - 1)
     step2 = 1 << loc
@@ -180,7 +180,7 @@ end
 
 const _hadamard_mat = [1 1; 1 -1] / sqrt(2)
 function apply!(sv::AbstractStatevector, x::H)
-    apply!(sv, U2(x.loc, _hadamard_mat))
+    apply!(sv, U2(x.locs[1], _hadamard_mat))
 end
 
 function apply!(sv::AbstractStatevector, x::CX)
@@ -219,7 +219,7 @@ function apply!(sv::AbstractStatevector, x::Rx)
         cos(theta) -im*sin(theta)
         -im*sin(theta) cos(theta)
         ]
-    apply!(sv, U2(x.loc, m))
+    apply!(sv, U2(x.locs[1], m))
 end
 
 function apply!(sv::AbstractStatevector, x::Ry)
@@ -228,7 +228,7 @@ function apply!(sv::AbstractStatevector, x::Ry)
         cos(theta) -sin(theta)
         sin(theta) cos(theta)
         ]
-    apply!(sv, U2(x.loc, m))
+    apply!(sv, U2(x.locs[1], m))
 end
 
 function apply_diagonal1q!(sv::Statevector, loc::Int, a,b)
@@ -246,7 +246,7 @@ end
 
 function apply!(sv::AbstractStatevector, x::Rz)
     a,b = cis(x.theta/ 2), cis(-x.theta/ 2)
-    apply_diagonal1q!(sv, x.loc, a,b)
+    apply_diagonal1q!(sv, x.locs[1], a,b)
 end
 
 function apply!(sv::AbstractStatevector, x::Xs)
@@ -265,7 +265,7 @@ end
 
 function apply!(sv::AbstractStatevector, x::I_plus_A)
     a1,a2,b,c = x.d1, x.d2, x.b, x.c
-    i,j,nq,v = x.loc1, x.loc2, sv.nq, sv.vec
+    i,j,nq,v = x.locs[1], x.locs[2], sv.nq, sv.vec
     mask = 2^(i-1) + 2^(j-1)
     mini,maxi = minmax(i,j)
     _2_pow_maxim1 = 2^(maxi-1)
@@ -290,14 +290,14 @@ end
 function apply!(sv::AbstractStatevector, x::Rxx)
     theta = x.theta/2
     d,bc = cos(theta), -im*sin(theta)
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d, d, bc, bc))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d, d, bc, bc))
 end
 
 function apply!(sv::AbstractStatevector, x::Ryy)
     theta = x.theta/2
     s = sin(theta)
     d,b,c = cos(theta), im*s, -im*s
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d,d,b,c))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d,d,b,c))
 end
 
 function apply!(sv::AbstractStatevector, x::RyyRxx)
@@ -307,7 +307,7 @@ function apply!(sv::AbstractStatevector, x::RyyRxx)
     d2 = -sx * sy + cy * cx
     b = im * (-sx * cy + sy * cx)
     c = im * (-sx * cy - sy * cx)
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d1,d2,b,c))
 end
 
 function apply!(sv::AbstractStatevector, x::RxxRyy)
@@ -317,7 +317,7 @@ function apply!(sv::AbstractStatevector, x::RxxRyy)
     d2 = -sx * sy + cy * cx
     b = im * (-sx * cy + sy * cx)
     c = im * (-sx * cy - sy * cx)
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d1,d2,b,c))
 end
 
 function apply!(sv::AbstractStatevector, x::RzzRyy)
@@ -327,7 +327,7 @@ function apply!(sv::AbstractStatevector, x::RzzRyy)
     d2 = cy * cz + im * sz * cy
     b = sy * sz + im * cz * sy
     c = sy * sz - im * sy * cz
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d1,d2,b,c))
 end
 
 function apply!(sv::AbstractStatevector, x::RyyRzz)
@@ -337,7 +337,7 @@ function apply!(sv::AbstractStatevector, x::RyyRzz)
     d2 = cy * cz + im * sz * cy
     b = sy * sz + im * cz * sy
     c = sy * sz - im * sy * cz
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+    apply!(sv, I_plus_A(x.locs[1], x.locs[2], d1,d2,b,c))
 end
 
 function apply!(sv::AbstractStatevector, x::RxxRzz)
@@ -347,7 +347,7 @@ function apply!(sv::AbstractStatevector, x::RxxRzz)
     d2 = d1'
     b = -sx * sz - im * cz * sx
     c = sx * sz - im * cz * sx
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+    apply!(sv, I_plus_A(x.loc[1], x.locs[2], d1,d2,b,c))
 end
 
 function apply!(sv::AbstractStatevector, x::RzzRxx)
@@ -357,11 +357,11 @@ function apply!(sv::AbstractStatevector, x::RzzRxx)
     d2 = d1'
     b = -sx * sz - im * cz * sx
     c = sx * sz - im * cz * sx
-    apply!(sv, I_plus_A(x.loc1, x.loc2, d1,d2,b,c))
+    apply!(sv, I_plus_A(x.loc[1], x.loc[2], d1,d2,b,c))
 end
 
 function apply!(sv::Statevector, x::Rzz)
-    nq,i,j = sv.nq, x.loc1, x.loc2
+    nq,i,j = sv.nq, x.locs[1], x.locs[2]
     v = sv.vec
     theta = x.theta
     a,b = cis(theta/2), cis(-theta/2)

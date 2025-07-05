@@ -20,12 +20,13 @@ for g in [:X, :Y, :Z, :H, :Id, :P0, :P1, :S, :T, :Sdag, :Tdag]
     name = string(g)
     @eval export $g
     @eval begin
-        struct $g <: Operator
-            loc::Int
+        mutable struct $g <: Operator
+            locs::Tuple{Int}
         end
 
-        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.loc))")
-        locs(x::$g) = (x.loc,)
+        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.locs[1]))")
+        locs(x::$g) = x.locs
+        $g(loc::Int) = $g((loc,))
 
         @doc """
             $($name)(loc::Int)
@@ -42,14 +43,15 @@ export U2
 
 General single-qubit operator
 """
-struct U2{T<:AbstractMatrix} <: Operator
-    loc::Int
+mutable struct U2{T<:AbstractMatrix} <: Operator
+    locs::Tuple{Int}
     mat::T
 end
-locs(x::U2) = (x.loc,)
+locs(x::U2) = x.locs
+U2(loc::Int, mat::AbstractMatrix) = U2((loc,), mat)
 
 export Controlled, controlled
-struct Controlled{O<:Operator} <: Operator
+mutable struct Controlled{O<:Operator} <: Operator
     ctrl_loc::Int
     op::O
 end
@@ -89,13 +91,14 @@ for g in [:Rx, :Ry, :Rz]
     name = string(g)
     @eval export $g
     @eval begin
-        struct $g <: Operator
-            loc::Int
+        mutable struct $g <: Operator
+            locs::Tuple{Int}
             theta::Float64
         end
 
-        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.loc), θ=$(x.theta))")
-        locs(x::$g) = (x.loc,)
+        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.locs[1]), θ=$(x.theta))")
+        locs(x::$g) = x.locs
+        $g(loc::Int, theta::Float64) = $g((loc, ), theta)
 
         @doc """
             $($name)(loc::Int, theta::Float64)
@@ -110,7 +113,7 @@ for g in[:Xs, :Ys, :Zs]
     name = string(g)
     @eval export $g
     @eval begin
-        struct $g{N} <: Operator
+        mutable struct $g{N} <: Operator
             locs::NTuple{N,Int}
         end
 
@@ -137,14 +140,14 @@ for g in [:Rxx, :Ryy, :Rzz]
     name = string(g)
     @eval export $g
     @eval begin
-        struct $g <: Operator
-            loc1::Int
-            loc2::Int
+        mutable struct $g <: Operator
+            locs::Tuple{Int,Int}
             theta::Float64
         end
 
-        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.loc1),$(x.loc2), θ=$(x.theta))")
-        locs(x::$g) = (x.loc1, x.loc2)
+        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.locs[1]),$(x.locs[2]), θ=$(x.theta))")
+        locs(x::$g) = x.locs
+        $g(loc1::Int, loc2::Int, theta::Float64) = $g((loc1,loc2), theta)
 
         @doc """
             $($name)(loc1::Int, loc2::Int, theta::Float64)
@@ -160,14 +163,14 @@ for g in [:RyyRxx, :RzzRyy, :RxxRzz, :RxxRyy, :RyyRzz, :RzzRxx]
     @eval export $g
     @eval begin
         struct $g <: Operator
-            loc1::Int
-            loc2::Int
+            locs::Tuple{Int,Int}
             theta1::Float64
             theta2::Float64
         end
 
-        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.loc1),$(x.loc2), θ1=$(x.theta1), θ2=$(x.theta2))")
-        locs(x::$g) = (x.loc1, x.loc2)
+        Base.show(io::IO, x::$g) = print(io, string(nameof(typeof(x))), "($(x.locs[1]),$(x.locs[2]), θ1=$(x.theta1), θ2=$(x.theta2))")
+        locs(x::$g) = x.locs
+        $g(loc1::Int, loc2::Int, theta1::Float64, theta2::Float64) = $g((loc1,loc2), theta1, theta2)
 
         @doc """
             $($name)(loc1::Int, loc2::Int, theta1::Float64, theta2::Float64)
@@ -189,14 +192,14 @@ end
     ]
 """
 struct I_plus_A{T<:Number, U<:Number} <: Operator
-    loc1::Int
-    loc2::Int
+    locs::Tuple{Int,Int}
     d1::T
     d2::T
     b::U
     c::U
 end
-locs(x::I_plus_A) = (x.loc1, x.loc2)
+locs(x::I_plus_A) = x.locs
+I_plus_A(loc1::Int, loc2::Int, d1::T, d2::T, b::U, c::U) where {T<:Number, U<:Number} = I_plus_A((loc1,loc2), d1,d2,b,c) 
 export I_plus_A
 
 export mat
@@ -218,6 +221,8 @@ mat(::Type{P0}) = Diagonal([1, 0])
 mat(::Type{P1}) = Diagonal([0, 1])
 mat(::Type{S}) = Diagonal([1, im])
 mat(::Type{T}) = Diagonal([1, exp(im*π/4)])
+mat(::Type{Sdag}) = Diagonal([1, -im])
+mat(::Type{Tdag}) = Diagonal([1, exp(-im*π/4)])
 mat(::Type{CX}) = sparse([1 0 0 0; 0 0 0 1; 0 0 1 0; 0 1 0 0])
 mat(::Type{CZ}) = Diagonal([1, 1, 1, -1])
 mat(::Type{Rx}, θ::Real) = [cos(θ/2) -im*sin(θ/2); -im*sin(θ/2) cos(θ/2)]
@@ -266,7 +271,7 @@ mat(::Type{I_plus_A}) = sparse([d1 0 0 b;0 d2 c 0;0 c d2 0;b 0 0 d1])
 function mat(nq::Int, x::Union{X,Y,Z,H,Id,P0,P1,U2,S,T})
     m = mat(typeof(x)) |> sparse
     id = convert(typeof(m), I(2))
-    loc = x.loc
+    loc = x.locs[1]
     ret = loc==1 ? m : id
     for i in 2:nq
         if i==loc
@@ -300,7 +305,7 @@ end
 function mat(nq::Int, x::Union{Rx,Ry,Rz})
     m = mat(typeof(x), x.theta) |> sparse
     id = convert(typeof(m), I(2))
-    loc = x.loc
+    loc = x.locs[1]
     ret = loc==1 ? m : id
     for i in 2:nq
         if i==loc
@@ -391,8 +396,8 @@ end
 mat(nq::Int, te::TimeEvolution) = exp(Matrix(mat(nq, -im * te.hamilt * te.t)))
 locs(te::TimeEvolution) = locs(te.hamilt)
 
-const single_qubit_gates = Union{Id,X,Y,Z,H,S,T,P0,P1,U2,Rx,Ry,Rz}
-const two_qubit_gates = Union{I_plus_A, Rxx,Ryy,Rzz,RxxRyy,RyyRzz,RzzRxx,RzzRyy,RyyRxx,RxxRzz}
+const single_qubit_gates = Union{Id,X,Y,Z,H,S,T,P0,P1,U2,Rx,Ry,Rz,Sdag,Tdag}
+const two_qubit_gates = Union{I_plus_A, Rxx,Ryy,Rzz,RxxRyy,RyyRzz,RzzRxx,RzzRyy,RyyRxx,RxxRzz,CX,CZ}
 """
     nqubits(gate)
 

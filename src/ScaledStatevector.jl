@@ -91,7 +91,7 @@ function apply_diagonal1q!(ssv::ScaledStatevector, loc::Int, a,b)
 end
 
 function apply!(sv::ScaledStatevector, x::Rzz)
-    nq,i,j = sv.nq, x.loc1, x.loc2
+    nq,i,j = sv.nq, x.locs[1], x.locs[2]
     _i, _j = minmax(i,j)
     v = sv.vec
     theta = x.theta
