@@ -16,7 +16,7 @@ returns the locations of qubits which the operator to be applied
 """
 
 # define constant single-qubit unitary gates
-for g in [:X, :Y, :Z, :H, :Id, :P0, :P1, :S, :T]
+for g in [:X, :Y, :Z, :H, :Id, :P0, :P1, :S, :T, :Sdag, :Tdag]
     name = string(g)
     @eval export $g
     @eval begin
@@ -348,6 +348,11 @@ end
 mat(nq::Int, x::Add) = sum(mat(nq, c) for c in x.contents)
 locs(x::Add) = ([cc for c in x.contents for cc in locs(c)]...,)
 
+"""
+    mat(nq::Int) = (op::Operator) -> mat(nq, op)
+
+Lazy version of `mat`
+"""
 mat(nq::Int) = (op::Operator) -> mat(nq, op)
 
 
@@ -385,5 +390,18 @@ struct TimeEvolution{O<:Operator, T<:Number} <: Operator
 end
 mat(nq::Int, te::TimeEvolution) = exp(Matrix(mat(nq, -im * te.hamilt * te.t)))
 locs(te::TimeEvolution) = locs(te.hamilt)
+
+const single_qubit_gates = Union{Id,X,Y,Z,H,S,T,P0,P1,U2,Rx,Ry,Rz}
+const two_qubit_gates = Union{I_plus_A, Rxx,Ryy,Rzz,RxxRyy,RyyRzz,RzzRxx,RzzRyy,RyyRxx,RxxRzz}
+"""
+    nqubits(gate)
+
+    ```
+    julia> nqubits(X)
+    1
+    ```
+"""
+nqubits(::Type{<:single_qubit_gates}) = 1
+nqubits(::Type{<:two_qubit_gates}) = 2
 
 #TODO

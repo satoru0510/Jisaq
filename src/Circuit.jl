@@ -11,6 +11,7 @@ end
 Circuit(gates) = Circuit(gates, "")
 
 Base.:*(g1::AbstractChannel, g2::AbstractChannel) = Circuit([g2, g1])
+Base.:*(g1::AbstractChannel, g2::AbstractChannel, g3::AbstractChannel) = Circuit([g3, g2, g1])
 Base.:*(g1::AbstractChannel...) = Circuit(reverse!(vcat(g1...)))
 
 Base.repeat(g::AbstractChannel, reps::Int) = Circuit(repeat([g], reps))

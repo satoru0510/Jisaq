@@ -97,6 +97,8 @@ end
 Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Z) = apply_phase_1q_cuda!(cusv, x.loc, -1)
 Jisaq.apply!(cusv::Statevector{<:CuArray}, x::S) = apply_phase_1q_cuda!(cusv, x.loc, im)
 Jisaq.apply!(cusv::Statevector{<:CuArray}, x::T) = apply_phase_1q_cuda!(cusv, x.loc, exp(im*π/4) )
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Sdag) = apply_phase_1q_cuda!(cusv, x.loc, -im )
+Jisaq.apply!(cusv::Statevector{<:CuArray}, x::Tdag) = apply_phase_1q_cuda!(cusv, x.loc, exp(-im*π/4) )
 
 function apply!(cusv::Statevector{<:CuArray}, x::P0)
     function k(a, loc)
@@ -191,11 +193,11 @@ function Jisaq.apply!(sv::Statevector{<:CuArray}, x::CX)
         tidx = threadIdx().x - 1
         bidx = blockIdx().x - 1
         idx = 1024*bidx + tidx
-        offset = 1 + 1 << (i-1)
-        step = 1 << (j-1)
         _i, _j = minmax(i,j)
         _2_pow_i = 1 << (_i-1)
         _2_pow_j = 1 << (_j-1)
+        offset = 1 + 1 << (i-1)
+        step = 1 << (j-1)
         first = bit_insert(bit_insert(idx, _2_pow_i), _2_pow_j) + offset
         second = first + step
         v[first],v[second] = v[second],v[first]
@@ -302,7 +304,6 @@ CUDA.cu(sv::Statevector) = Statevector(CuArray(sv.vec) )
 Jisaq.cpu(cusv::Statevector{<:CuArray}) = Statevector(Array(cusv.vec) )
 
 #TODO
-#P0, P1
 #TimeEvolution
 
 end

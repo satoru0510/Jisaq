@@ -75,8 +75,8 @@ function append!(canvas::Matrix{Char}, cursor::Vector{Int}, x::Union{CX,CZ}, sty
         canvas = hcat(canvas, fill('─', nq, c + 1 - 1 - size(canvas)[2]) )
     end
     canvas[ctrl_loc:targ_loc, c] = cm
-    cursor[ctrl_loc] = c+1
-    cursor[targ_loc] = c+1
+    cursor[ctrl_loc] = c+2
+    cursor[targ_loc] = c+2
     canvas
 end
 

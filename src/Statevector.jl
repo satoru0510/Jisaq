@@ -138,6 +138,8 @@ end
 apply!(sv::AbstractStatevector, x::Z) = apply_phase_1q_cpu!(sv, x.loc, -1)
 apply!(sv::AbstractStatevector, x::S) = apply_phase_1q_cpu!(sv, x.loc, im)
 apply!(sv::AbstractStatevector, x::T) = apply_phase_1q_cpu!(sv, x.loc, exp(im*π/4) )
+apply!(sv::AbstractStatevector, x::Sdag) = apply_phase_1q_cpu!(sv, x.loc, -im )
+apply!(sv::AbstractStatevector, x::Tdag) = apply_phase_1q_cpu!(sv, x.loc, exp(-im*π/4) )
 
 function apply!(sv::AbstractStatevector, x::P0)
     nq,loc,vec = sv.nq, x.loc, sv.vec
@@ -481,9 +483,19 @@ function LinearAlgebra.normalize!(sv::Statevector)
 end
 
 export inner_prod
+"""
+    inner_prod(sv1::AbstractStatevector, sv2::AbstractStatevector) = vec(sv1) ⋅ vec(sv2)
+
+Compute inner product of two `AbstractStatevector`s
+"""
 inner_prod(sv1::AbstractStatevector, sv2::AbstractStatevector) = vec(sv1) ⋅ vec(sv2)
 
 export fidelity
+"""
+    fidelity(sv1::AbstractStatevector, sv2::AbstractStatevector) = norm(inner_prod(sv1, sv2) )^2
+
+Compute fidelity of two `AbstractStatevector`s
+"""
 fidelity(sv1::AbstractStatevector, sv2::AbstractStatevector) = norm(inner_prod(sv1, sv2) )^2
 
 export cpu
