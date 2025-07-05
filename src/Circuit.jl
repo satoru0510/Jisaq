@@ -35,3 +35,7 @@ end
 
 locs(cir::Circuit) = Tuple(1:loc_max(cir))
 loc_max(cir::Circuit) = maximum(maximum.(locs.(cir.gates)))
+
+function mat(nq::Int, cir::Circuit)
+    mapreduce(mat(nq), *, cir.gates)
+end

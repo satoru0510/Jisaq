@@ -57,6 +57,7 @@ include("Operator.jl")
 include("CircuitDrawer.jl")
 include("Statevector.jl")
 include("ScaledStatevector.jl")
+include("DensityMatrix.jl")
 include("OpenMPS.jl")
 include("Benchmark.jl")
 

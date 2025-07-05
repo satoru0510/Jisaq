@@ -162,7 +162,7 @@ for g in [:RyyRxx, :RzzRyy, :RxxRzz, :RxxRyy, :RyyRzz, :RzzRxx]
     name = string(g)
     @eval export $g
     @eval begin
-        struct $g <: Operator
+        mutable struct $g <: Operator
             locs::Tuple{Int,Int}
             theta1::Float64
             theta2::Float64
