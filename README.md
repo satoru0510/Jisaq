@@ -17,6 +17,7 @@ julia> sv = statevec(3) #3-qubit statevector initialized in zero state
 julia> cir = Circuit([H(1), CX(1,2)])
 Circuit with 2 components
 H(1)
+1 controlled-X(2)
 
 julia> draw(cir, :unicode)
 ─H─┬─
