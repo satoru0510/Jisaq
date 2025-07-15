@@ -63,6 +63,7 @@ alt="benchmark_plot"></img>
 </div
 
 - Trotterization of 1D periodic-boundary-condition transverse-field Heisenberg model's Hamiltonian (single step)
+- Statevector Simulation
 - OS: Linux (x86_64-linux-gnu)
 - CPU: 8 × Intel(R) Xeon(R) W-2245 CPU @ 3.90GHz
 - GPU: NVIDIA RTX A6000
